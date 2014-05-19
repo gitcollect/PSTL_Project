@@ -1,0 +1,78 @@
+#include "rc4.h"
+
+const int N = 256;
+
+int* rc4(int number_of_bytes){	
+	
+	/*struct timeval time; 
+    gettimeofday(&time,NULL);	
+	srand((time.tv_sec * 1000) + (time.tv_usec / 1000));*/
+	
+    int S[N];
+    int key_length = 8;
+    int key[8];
+	
+	//result
+	int keystream [number_of_bytes];
+    
+    int i, j;
+    int tmp;
+
+	//random key
+	for (i = 0; i < 8; i++)
+	    key[i] = random_byte();
+	
+	// KSA
+	for (i = 0; i < N; i ++)
+	S[i] = i;
+
+	j = 0;
+	for (i = 0; i < N; i++) {
+		j = (j + S[i] + key[i % key_length]) % N;
+		tmp = S[i];
+		S[i] = S[j];
+		S[j] = tmp;
+	}
+	
+	// PRGA
+	i = 0;
+	j = 0;
+	int counter = 0;	
+	
+	while (counter < number_of_bytes){
+		i = (i + 1) % N;
+		j = (j + S[i]) % N;
+		tmp = S[i];
+		S[i] = S[j];
+		S[j] = tmp;
+		tmp = (S[i] + S[j]) % N;
+		//register the result
+
+		keystream[counter] = tmp;
+		counter ++;
+	}
+
+	return keystream;
+}
+
+//generation of a random byte
+int random_byte (){
+  return (rand() % 256);
+}
+
+//get a sequence of results with length given in param, 
+//this results are generated with the same message given in param
+IntegerList cipher_mess_seq (long length, int message){
+  int * key;
+  IntegerList keystreams;
+  for (long i = 0; i < length ; i++){
+    key = rc4(1);
+    keystreams.push_back(key[0]);
+    keystreams.push_back(0);
+  }
+  for (IntegerList::iterator iter = keystreams.begin(); iter != keystreams.end(); iter++){
+    (*iter) = (*iter)^message;
+  }
+  return keystreams;
+}
+

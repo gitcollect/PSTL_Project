@@ -1,0 +1,39 @@
+APPROCHE NAIVE D'UNE ATTAQUE STATISTIQUE AVEC UN MEME MESSAGE de un octet 
+
+Pré-requis :
+	- ensemble de chiffré
+	- table T de 255 cases correspondant aux biais xoré avec le chiffré
+
+
+1- Récupération de chiffré (premiere position S0) 
+prendre un octet qcq (message)
+appliquer RC4 et récupérer le premier octet
+ensuite XOR message avec la suite chiffrante généré par RC4
+faire l'etape 2 et 3 autant d'octets souhaité 
+
+2- Récupération des Biais
+lire le fichier des stats
+extraire le biais 
+
+3- XOR le biais de l'étape (2) avec tous les chiffrés récupérés dans l'étape (1)
+	après l'opération de XOR pour chaque chiffré
+	incrémenter la valeur obtenue dans la case du tableau T correpondante à cette valeur
+
+4- Récupérer la plus haute valeur dans le tableau T (haute probabilité que ca soit le message)
+	La numero de la case est sensé être le message.
+
+
+
+
+
+APPROCHE PSEUDO-NAIVE AVEC FORMULE MAGIQUE (une seule position r) 
+
+1- récupération de S nombre de chiffré de taille N
+
+2- Récupération du biais correspondant à la position r de l'octet traité 
+
+3- construire une matrice M de taille 255*255 tel que :
+	M(k,u) = nombre de fois ou un chiffré à la position r est égal à k XOR u  avec k étant une clé condidat et u un message clair condidat 
+
+4- pour chaque u appliquer la formule suivante
+	lambda(u) =  SOMME k=0 à k=255 (N(k,u) * Log(Pr,k))

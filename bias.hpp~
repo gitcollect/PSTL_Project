@@ -1,0 +1,18 @@
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <utility>
+#include <fstream>
+#include <vector>
+#include <string>
+
+#ifndef BIAIS
+#define BIAIS
+
+using namespace std;
+typedef pair<int,double> IntegerDoublePair;
+
+vector<IntegerDoublePair> get_biais (string, int);
+int compareTo (double, double);
+
+#endif

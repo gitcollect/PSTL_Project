@@ -1,0 +1,27 @@
+CC = g++
+CFLAGS = -Wall -g
+LDFLAGS = -lm 
+EXEC_NAME_NAIVE = execNaiveAttack
+EXEC_NAME_STATALGO = execStatAttack
+OBJ_FILES_NAIVE = naiveAttack.o bias.o rc4.o
+OBJ_FILES_STATALGO = statAttack.o bias.o rc4.o
+
+
+naiveAttack : $(EXEC_NAME_NAIVE)
+
+statAttack : $(EXEC_NAME_STATALGO)
+
+$(EXEC_NAME_NAIVE) : $(OBJ_FILES_NAIVE)
+	$(CC) $(OBJ_FILES_NAIVE) $(LDFLAGS) -o $(EXEC_NAME_NAIVE)
+
+$(EXEC_NAME_STATALGO) : $(OBJ_FILES_STATALGO)
+	$(CC) $(OBJ_FILES_STATALGO) $(LDFLAGS) -o $(EXEC_NAME_STATALGO)
+
+%.o : %.cpp
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+clean :
+	rm -f $(OBJ_FILES_NAIVE) $(OBJ_FILES_STATALGO)
+
+mrproper: clean
+	rm -rf $(EXEC_NAME_NAIVE) $(EXEC_NAME_STATALGO)

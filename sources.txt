@@ -1,0 +1,4 @@
+Break WEP Faster with Statistical Analysis Rafik chaabouni June 2006 : https://eprint.iacr.org/2013/425.pdf
+
+
+

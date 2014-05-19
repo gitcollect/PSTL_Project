@@ -1,0 +1,107 @@
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/time.h>
+#include <string>
+#include <cmath>
+#include "biais.h"
+#include "rc4.h"
+
+using namespace std;
+
+//types
+typedef int Matrix [256][256];
+
+//functions of this file
+int statAlgo(string);
+
+//main function
+int main (int argc, const char * argv[]){
+
+  //to have a better precision with random senquences 
+  struct timeval time; 
+  gettimeofday(&time,NULL);	
+  srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
+  
+  int result = statAlgo("Biases/resultat_without_iv.txt");
+  
+  cout << "Result found after attack : "<< result << endl;
+  
+  return 0;
+}
+
+
+//naive attack using biais
+int statAlgo (string path){
+  //variables
+  int message;
+  IntegerList keystreams; //for the definition of this type see rc4.h
+  Matrix vote;
+  vector<IntegerDoublePair> biais;
+  double lambdas [256];
+
+  //initialization  
+  for (int i=0 ; i < 256 ; i++)
+    for(int j=0; j < 256 ; j++)
+      vote[i][j] = 0;
+
+  for (int i=0; i < 256 ; i++){
+    lambdas[i]=0;
+  }
+
+  message = random_byte();
+  cout << "The Message : " << message << endl;
+  
+  cout << "Generation of cipher sequences ..." << endl;
+  keystreams = cipher_mess_seq(10000, message);
+
+  cout << "Starting Votes ..." << endl;
+  //VOTE
+  int tmp, tmp_iter;
+  for(IntegerList::iterator iter = keystreams.begin() ; iter != keystreams.end(); ++iter){
+    tmp = 0;
+    for (int u = 0; u < 256 ; u++){
+      for(int k= 0; k < 256 ; k++){
+	tmp = u^k;
+	tmp_iter = (*iter);
+	if(tmp == tmp_iter){
+	  vote[u][k]++;
+	}
+      }
+    }
+  }
+  
+  cout << "Extracting biases ..." << endl;
+
+  //GETTING ALL BIASES 
+  biais = get_all_biases(path);
+  
+  cout << "Executing the Formula ... " << endl;
+  
+  //APPLICATION FORMULA
+  for (int u=0; u< 256; u++){
+    for(int k = 0; k<256 ;k++){
+      lambdas[u] += fabs(((double) vote[u][k])*log(biais.at(k).second));  
+    }
+    cout << "labmbda u=" << u << "   :  " << lambdas[u] << endl;
+
+  }
+  
+  cout << "Extracting the best candidate ..." << endl;
+  
+  //getting the result
+  double val = 0;
+  int result = 0;
+  for(int i = 0; i < 256; i++){
+    if (lambdas[i] > val){
+      val =lambdas[i];
+      result = i;
+    }
+  }
+  
+  //clear results
+  keystreams.clear();
+    
+  return result;
+  
+}

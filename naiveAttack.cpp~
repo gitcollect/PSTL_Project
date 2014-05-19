@@ -1,0 +1,95 @@
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <vector>
+#include <sys/time.h>
+#include <string>
+#include "biais.h"
+#include "rc4.h"
+
+using namespace std;
+typedef vector<int> IntegerList;
+typedef pair<int, double> IntegerDoublePair;
+
+//functions of this file
+int genere_octet();
+int naiveAlgo(string);
+IntegerList cipher_mess_seq (long, int);
+
+//main function
+int main (int argc, const char * argv[]){
+
+  //to have a better precision with random senquences 
+  struct timeval time; 
+  gettimeofday(&time,NULL);	
+  srand((time.tv_sec * 1000) + (time.tv_usec / 1000));
+  
+  int result = naiveAlgo("/users/nfs/Etu2/3362972/Bureau/RC4/resultat_without_iv.txt");
+  
+  cout << "result found after attack : "<< result << endl;
+  
+  return 0;
+}
+
+
+//generation of the byte
+int genere_octet (){
+  return (rand() % 256);
+}
+
+
+//naive attack using biais
+int naiveAlgo (string path){
+  //variables
+  int message;
+  int T [256];
+  IntegerList keystreams;
+
+  //initialization
+  message = genere_octet();
+  cout << "The Message : " << message << endl;
+  keystreams = cipher_mess_seq(50, message);
+  vector<IntegerDoublePair> biais;
+  biais = get_bias(path, 1);
+  
+  cout << "biais val " << biais.at(0).first << endl;
+  
+  for(IntegerList::iterator iter = keystreams.begin() ; iter != keystreams.end(); ++iter){
+    int tmp = (*iter)^biais.at(0).first;
+    cout << "tmp : " << tmp << endl;
+    T[tmp]++;
+  }
+  
+  //getting the result
+  int val = 0;
+  int result = 0;
+  for(int i = 0; i < 256; i++){
+    if (T[i] > val){
+      val = T[i];
+      result = i;
+    }
+  }
+
+  cout << "max supposé : " << T[message] << endl;
+  
+  return result;
+  
+}
+
+
+//get a sequence of results with length given in param, 
+//this results are generated with the same message given in param
+IntegerList cipher_mess_seq (long length, int message){
+  int * key;
+  IntegerList keystreams;
+  for (long i = 0; i < length ; i++){
+    key = rc4(1);
+    keystreams.push_back(key[0]);
+    keystreams.push_back(0);
+  }
+  for (IntegerList::iterator iter = keystreams.begin(); iter != keystreams.end(); iter++){
+    (*iter) = (*iter)^message;
+  }
+  return keystreams;
+}
+
